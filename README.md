@@ -15,7 +15,7 @@ API, which stands for Application Programming Interface, acts as an interface th
 
 > File : `routes/api.php`
 
--   Package :s
+-   Package :
 
 ```php
 use Illuminate\Http\Request;
@@ -185,7 +185,7 @@ public function deleteTodo($id)
 }
 ```
 
-### 4. Postman Structure
+### Postman Structure
 
 You can structure your Postman request like this:
 
