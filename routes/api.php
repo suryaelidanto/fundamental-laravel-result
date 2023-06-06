@@ -22,7 +22,12 @@ Route::delete('/todos/{id}', [TodoController::class, 'deleteTodo']);
 
 class TodoController
 {
-    private $todosFile = __DIR__ . '/todos.json';
+    private $todosFile;
+
+    public function __construct()
+    {
+        $this->todosFile = base_path("/todos.json");
+    }
 
     public function findTodos()
     {
