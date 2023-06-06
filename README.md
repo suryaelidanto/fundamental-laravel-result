@@ -5,7 +5,8 @@ In Laravel, routing is pretty easy and straightforward. It is essential to have 
 API, which stands for Application Programming Interface, acts as an interface that connects one application with another. It serves as a mediator between different applications, whether they are within the same platform or across multiple platforms.
 
 -   Firstly, make `todos.json` in `root directory` like so :
-    > File : `todos.json`
+
+> File : `todos.json`
 
 ```json
 []
