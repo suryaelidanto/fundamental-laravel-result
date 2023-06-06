@@ -14,7 +14,7 @@ composer create-project laravel/laravel project-name
 laravel new project-name
 ```
 
-### 3. Create your first hello world API
+### 2. Create your first hello world API
 
 > File : `routes/api.php`
 
@@ -28,7 +28,7 @@ Route::get('/hello', function () {
 
 This code defines a route for a GET request to the '/hello' endpoint. When a user makes a GET request to this endpoint, the code will return a JSON response with a single key-value pair, where the key is 'message' and the value is 'Hello World! 😎'. This is a simple example of how to define a route and return a JSON response in Laravel.
 
-### 4. Running
+### 3. Running
 
 Running Your App with this command
 
@@ -36,7 +36,7 @@ Running Your App with this command
 php artisan serve
 ```
 
-### 5. Result 
+### 4. Result 
 - Open your browser and type http://localhost:8000/api/hello
 
 ![Alt text](image.png)
