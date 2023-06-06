@@ -1,29 +1,45 @@
-# Prepare
+# Make Hello World
 
-### 1. Download
+### 1. Project Init
 
-- Composer [Click Here](https://getcomposer.org/download/)
-- XAMPP: [Click Here](https://www.apachefriends.org/download.html)
-- Postman: [Click Here](https://www.postman.com/downloads/?utm_source=postman-home)
+#### 1.1 Create project with composer :
 
-#### PREFERENCE :
-You can also use laravel installer :
 ```bash
-composer global require laravel/installer
+composer create-project laravel/laravel project-name
 ```
 
-Check if it's installed :
-Open cmd -> type **"laravel"**
+#### 1.2 Create project with laravel installer :
 
-If it's show like this, it's ready to go! 🔥 :
+```bash
+laravel new project-name
+```
 
-![1](./1.png)
+### 3. Create your first hello world API
 
+> File : `routes/api.php`
 
-### 2. Extension on VS Code
+```php
+Route::get('/hello', function () {
+    return response()->json([
+        'message' => 'Hello World! 😎'
+    ]);
+});
+```
 
-![2](./2.png)
-PHP Extension [Click Here](https://marketplace.visualstudio.com/items?itemName=DEVSENSE.phptools-vscode)
+This code defines a route for a GET request to the '/hello' endpoint. When a user makes a GET request to this endpoint, the code will return a JSON response with a single key-value pair, where the key is 'message' and the value is 'Hello World! 😎'. This is a simple example of how to define a route and return a JSON response in Laravel.
 
-![3](./3.png)
-Laravel Extension [Click Here](https://marketplace.visualstudio.com/items?itemName=onecentlin.laravel5-snippets)
+### 4. Running
+
+Running Your App with this command
+
+```
+php artisan serve
+```
+
+### 5. Result 
+- Open your browser and type http://localhost:8000/api/hello
+
+![Alt text](image.png)
+
+Pretty cool right? 😎🔥
+
