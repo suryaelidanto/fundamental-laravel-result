@@ -21,6 +21,7 @@ API, which stands for Application Programming Interface, acts as an interface th
 ```php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
 ```
 
 -   Create routes :
@@ -31,6 +32,24 @@ Route::get('/todos/{id}', [TodoController::class, 'getTodo']);
 Route::post('/todos', [TodoController::class, 'createTodo']);
 Route::patch('/todos/{id}', [TodoController::class, 'updateTodo']);
 Route::delete('/todos/{id}', [TodoController::class, 'deleteTodo']);
+```
+
+-   Create Todo class :
+
+```php
+class Todo
+{
+    public string $id;
+    public string $title;
+    public bool $isDone;
+
+    public function __construct($id, $title, $isDone)
+    {
+        $this->id = $id;
+        $this->title = $title;
+        $this->isDone = $isDone;
+    }
+}
 ```
 
 -   Create TodoController class :
@@ -45,9 +64,10 @@ class TodoController
 -   Inside `TodoController` insert this code :
 
 ```php
-private $todosFile;
+private string $todosFile;
 
-public function __construct() {
+public function __construct()
+{
     $this->todosFile = base_path("/todos.json");
 }
 ```
@@ -59,10 +79,10 @@ This is for storing `todos.json` file path so we can use it later
 ```php
 public function findTodos()
 {
-    $todos = json_decode(file_get_contents($this->todosFile));
+    $todos = json_decode(File::get($this->todosFile));
 
     return response()->json([
-        'message' => $todos
+        'data' => $todos
     ]);
 }
 ```
@@ -75,7 +95,7 @@ public function getTodo($id)
     $todo = null;
     $isGetTodo = false;
 
-    $todos = json_decode(file_get_contents($this->todosFile));
+    $todos = json_decode(File::get($this->todosFile));
 
     foreach ($todos as $item) {
         if ($id === $item->id) {
@@ -101,17 +121,17 @@ public function getTodo($id)
 ```php
 public function createTodo(Request $request)
 {
-    $todos = json_decode(file_get_contents($this->todosFile));
+    $todos = json_decode(File::get($this->todosFile));
 
-    $todo = [
-        'id' => $request->id,
-        'title' => $request->title,
-        'isDone' => false
-    ];
+    $todo = new Todo(
+        $request->json()->get('id'),
+        $request->json()->get('title'),
+        $request->json()->get('isDone')
+    );
 
     array_push($todos, $todo);
 
-    file_put_contents($this->todosFile, json_encode($todos));
+    File::put($this->todosFile, json_encode($todos));
 
     return response()->json([
         "code" => 201,
@@ -125,10 +145,17 @@ public function createTodo(Request $request)
 ```php
 public function updateTodo(Request $request, $id)
 {
-    $data = $request->json()->all();
+    $json = $request->json()->all();
+
+    $data = new Todo(
+        $json['id'],
+        $json['title'],
+        $json['isDone']
+    );
+
     $isGetTodo = false;
 
-    $todos = json_decode(file_get_contents($this->todosFile));
+    $todos = json_decode(File::get($this->todosFile));
 
     foreach ($todos as $index => $item) {
         if ($id === $item->id) {
@@ -145,7 +172,7 @@ public function updateTodo(Request $request, $id)
         ], 404);
     }
 
-    file_put_contents($this->todosFile, json_encode($todos));
+    File::put($this->todosFile, json_encode($todos));
 
     return response()->json($data);
 }
@@ -159,7 +186,7 @@ public function deleteTodo($id)
     $isGetTodo = false;
     $index = 0;
 
-    $todos = json_decode(file_get_contents($this->todosFile));
+    $todos = json_decode(File::get($this->todosFile));
 
     foreach ($todos as $idx => $item) {
         if ($id === $item->id) {
@@ -177,7 +204,7 @@ public function deleteTodo($id)
     }
 
     array_splice($todos, $index, 1);
-    file_put_contents($this->todosFile, json_encode($todos));
+    File::put($this->todosFile, json_encode($todos));
 
     return response()->json([
         "code" => 204,

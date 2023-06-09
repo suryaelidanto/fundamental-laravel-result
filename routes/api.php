@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,9 +21,23 @@ Route::post('/todos', [TodoController::class, 'createTodo']);
 Route::patch('/todos/{id}', [TodoController::class, 'updateTodo']);
 Route::delete('/todos/{id}', [TodoController::class, 'deleteTodo']);
 
+class Todo
+{
+    public string $id;
+    public string $title;
+    public bool $isDone;
+
+    public function __construct($id, $title, $isDone)
+    {
+        $this->id = $id;
+        $this->title = $title;
+        $this->isDone = $isDone;
+    }
+}
+
 class TodoController
 {
-    private $todosFile;
+    private string $todosFile;
 
     public function __construct()
     {
@@ -31,10 +46,10 @@ class TodoController
 
     public function findTodos()
     {
-        $todos = json_decode(file_get_contents($this->todosFile));
+        $todos = json_decode(File::get($this->todosFile));
 
         return response()->json([
-            'message' => $todos
+            'data' => $todos
         ]);
     }
 
@@ -43,7 +58,7 @@ class TodoController
         $todo = null;
         $isGetTodo = false;
 
-        $todos = json_decode(file_get_contents($this->todosFile));
+        $todos = json_decode(File::get($this->todosFile));
 
         foreach ($todos as $item) {
             if ($id === $item->id) {
@@ -65,17 +80,17 @@ class TodoController
 
     public function createTodo(Request $request)
     {
-        $todos = json_decode(file_get_contents($this->todosFile));
+        $todos = json_decode(File::get($this->todosFile));
 
-        $todo = [
-            'id' => $request->id,
-            'title' => $request->title,
-            'isDone' => false
-        ];
+        $todo = new Todo(
+            $request->json()->get('id'),
+            $request->json()->get('title'),
+            $request->json()->get('isDone')
+        );
 
         array_push($todos, $todo);
 
-        file_put_contents($this->todosFile, json_encode($todos));
+        File::put($this->todosFile, json_encode($todos));
 
         return response()->json([
             "code" => 201,
@@ -85,10 +100,17 @@ class TodoController
 
     public function updateTodo(Request $request, $id)
     {
-        $data = $request->json()->all();
+        $json = $request->json()->all();
+
+        $data = new Todo(
+            $json['id'],
+            $json['title'],
+            $json['isDone']
+        );
+
         $isGetTodo = false;
 
-        $todos = json_decode(file_get_contents($this->todosFile));
+        $todos = json_decode(File::get($this->todosFile));
 
         foreach ($todos as $index => $item) {
             if ($id === $item->id) {
@@ -105,7 +127,7 @@ class TodoController
             ], 404);
         }
 
-        file_put_contents($this->todosFile, json_encode($todos));
+        File::put($this->todosFile, json_encode($todos));
 
         return response()->json($data);
     }
@@ -115,7 +137,7 @@ class TodoController
         $isGetTodo = false;
         $index = 0;
 
-        $todos = json_decode(file_get_contents($this->todosFile));
+        $todos = json_decode(File::get($this->todosFile));
 
         foreach ($todos as $idx => $item) {
             if ($id === $item->id) {
@@ -133,7 +155,7 @@ class TodoController
         }
 
         array_splice($todos, $index, 1);
-        file_put_contents($this->todosFile, json_encode($todos));
+        File::put($this->todosFile, json_encode($todos));
 
         return response()->json([
             "code" => 204,
