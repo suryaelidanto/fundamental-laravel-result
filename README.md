@@ -23,7 +23,9 @@ If it's show like this, it's ready to go! 🔥 :
 ### 2. Extension on VS Code
 
 ![2](./2.png)
+
 PHP Extension [Click Here](https://marketplace.visualstudio.com/items?itemName=DEVSENSE.phptools-vscode)
 
 ![3](./3.png)
+
 Laravel Extension [Click Here](https://marketplace.visualstudio.com/items?itemName=onecentlin.laravel5-snippets)
