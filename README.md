@@ -28,7 +28,7 @@
     ```php
     // other code above...
 
-    public function deleteUserById($id): array
+    public function deleteUserById(int $id): array
     {
         try {
             DB::delete("DELETE FROM users WHERE id = ?", [$id]);
@@ -57,7 +57,7 @@
             return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
         }
 
-        $deletedUser = $this->userRepository->deleteUserById($userById[0]->id);
+        $deletedUser = $this->userRepository->deleteUserById($userById["id"]);
 
         if (array_key_exists("error", $deletedUser)) {
             return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $deletedUser["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
