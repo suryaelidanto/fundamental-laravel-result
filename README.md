@@ -1,4 +1,4 @@
-# Insert Query with Query Builder
+# Update Query with Query Builder
 
 ### Repositories
 
