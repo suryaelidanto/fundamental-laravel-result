@@ -79,4 +79,15 @@ class UserRepositoryImplement implements UserRepository
             return ["error" => $e->getMessage()];
         }
     }
+
+    public function deleteUserById($id): array
+    {
+        try {
+            DB::delete("DELETE FROM users WHERE id = ?", [$id]);
+
+            return ["message" => sprintf("User ID : %d is deleted!", $id)];
+        } catch (\Exception $e) {
+            return ["error" => $e->getMessage()];
+        }
+    }
 }

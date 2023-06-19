@@ -82,4 +82,21 @@ class UserController extends Controller
 
         return response()->json((new SuccessResponse(Response::HTTP_OK, $updatedUser))->toArray(), Response::HTTP_OK);
     }
+
+    public function deleteUserById(int $id): JsonResponse
+    {
+        $userById = $this->userRepository->getUserById($id);
+
+        if (array_key_exists("error", $userById)) {
+            return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
+        }
+
+        $deletedUser = $this->userRepository->deleteUserById($userById[0]->id);
+
+        if (array_key_exists("error", $deletedUser)) {
+            return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $deletedUser["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json((new SuccessResponse(Response::HTTP_OK, $deletedUser))->toArray(), Response::HTTP_OK);
+    }
 }

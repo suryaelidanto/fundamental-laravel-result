@@ -1,4 +1,4 @@
-# Update Query with Query Builder
+# Delete Query with Query Builder
 
 ### Repositories
 
@@ -16,7 +16,8 @@
         public function getAllUsers(): array;
         public function getUserById(int $id): array;
         public function createUser(array $request): array;
-        public function updateUserById(array $request, array $userById): array; // write this code
+        public function updateUserById(array $request, array $userById): array;
+        public function deleteUserById(int $id): array; // write this code
     }
     ```
 
@@ -27,28 +28,12 @@
     ```php
     // other code above...
 
-    public function updateUserById(array $request, array $userById): array
+    public function deleteUserById($id): array
     {
         try {
-            $name = $request["name"] ?? "";
-            $email = $request["email"] ?? "";
-            $password = $request["password"] ?? "";
+            DB::delete("DELETE FROM users WHERE id = ?", [$id]);
 
-            if ($name == "") {
-                $name = $userById[0]->name;
-            }
-
-            if ($email == "") {
-                $email = $userById[0]->email;
-            }
-
-            if ($password == "") {
-                $password = $userById[0]->password;
-            }
-
-            DB::update("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?", [$name, $email, $password, $userById[0]->id]);
-
-            return ["message" => sprintf("User ID : '%s' is updated!", $userById[0]->id)];
+            return ["message" => sprintf("User ID : %d is deleted!", $id)];
         } catch (\Exception $e) {
             return ["error" => $e->getMessage()];
         }
@@ -62,38 +47,23 @@
     > File: `app/Http/Controllers/UserController.php`
 
     ```php
-    use App\DTO\Request\User\UpdateUserRequest;
-    ```
-
--   Then, add this code :
-
-    > File: `app/Http/Controllers/UserController.php`
-
-    ```php
     // other code above...
 
-    public function updateUserById(Request $request, int $id): JsonResponse
+    public function deleteUserById(int $id): JsonResponse
     {
-
         $userById = $this->userRepository->getUserById($id);
 
         if (array_key_exists("error", $userById)) {
             return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
         }
 
-        $validatedRequest = (new UpdateUserRequest($request->all()))->validate();
+        $deletedUser = $this->userRepository->deleteUserById($userById[0]->id);
 
-        if (array_key_exists("error", $validatedRequest)) {
-            return response()->json((new ErrorResponse(Response::HTTP_BAD_REQUEST, $validatedRequest["error"]))->toArray(), Response::HTTP_BAD_REQUEST);
+        if (array_key_exists("error", $deletedUser)) {
+            return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $deletedUser["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $updatedUser = $this->userRepository->updateUserById($request->all(), $userById);
-
-        if (array_key_exists("error", $updatedUser)) {
-            return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $updatedUser["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        return response()->json((new SuccessResponse(Response::HTTP_OK, $updatedUser))->toArray(), Response::HTTP_OK);
+        return response()->json((new SuccessResponse(Response::HTTP_OK, $deletedUser))->toArray(), Response::HTTP_OK);
     }
     ```
 
@@ -110,7 +80,6 @@
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::post('/users', [UserController::class, 'createUser']);
-    Route::patch('/users/{id}', [UserController::class, 'updateUserById']); // write this code
+    Route::patch('/users/{id}', [UserController::class, 'updateUserById']);
+    Route::delete('/users/{id}', [UserController::class, 'deleteUserById']); // write this code
     ```
-
--   Notice that here we use `Route::post` not `Route::get` for creating user, because we want to use `POST` HTTP request in postman later.
