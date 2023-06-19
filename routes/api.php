@@ -29,5 +29,5 @@ Route::prefix("v1")->group(function () {
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::post('/users', [UserController::class, 'createUser']);
-    
+    Route::patch('/users/{id}', [UserController::class, 'updateUserById']);
 });

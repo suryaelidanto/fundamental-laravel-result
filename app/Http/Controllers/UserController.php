@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DTO\Request\User\CreateUserRequest;
+use App\DTO\Request\User\UpdateUserRequest;
 use App\DTO\Response\Result\ErrorResponse;
 use App\DTO\Response\Result\SuccessResponse;
 use App\Repositories\User\UserRepository;
@@ -56,5 +57,29 @@ class UserController extends Controller
         }
 
         return response()->json((new SuccessResponse(Response::HTTP_OK, $createdUser))->toArray(), Response::HTTP_OK);
+    }
+
+    public function updateUserById(Request $request, int $id): JsonResponse
+    {
+
+        $userById = $this->userRepository->getUserById($id);
+
+        if (array_key_exists("error", $userById)) {
+            return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
+        }
+
+        $validatedRequest = (new UpdateUserRequest($request->all()))->validate();
+
+        if (array_key_exists("error", $validatedRequest)) {
+            return response()->json((new ErrorResponse(Response::HTTP_BAD_REQUEST, $validatedRequest["error"]))->toArray(), Response::HTTP_BAD_REQUEST);
+        }
+
+        $updatedUser = $this->userRepository->updateUserById($request->all(), $userById);
+
+        if (array_key_exists("error", $updatedUser)) {
+            return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $updatedUser["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json((new SuccessResponse(Response::HTTP_OK, $updatedUser))->toArray(), Response::HTTP_OK);
     }
 }
