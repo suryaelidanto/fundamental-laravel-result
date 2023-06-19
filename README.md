@@ -1,194 +1,357 @@
-# Group routes
+# Prepare connection, model, and dto
 
-Group Routes are needed in API development to differentiate a route for API or for standard website link.
+What we should prepare before starting to use the project is :
 
--   On `routes/api.php` file, declare Grouping Function for all Route
+### Database
 
-> File: `routes/api.php`
+-   Create database named `dumbmerch`
 
-```php
-Route::prefix("v1")->group(function () {
+### Connect database to laravel app
 
-    // todos
-    Route::get('/todos', [TodoController::class, 'findTodos']);
-    Route::get('/todos/{id}', [TodoController::class, 'getTodo']);
-    Route::post('/todos', [TodoController::class, 'createTodo']);
-    Route::patch('/todos/{id}', [TodoController::class, 'updateTodo']);
-    Route::delete('/todos/{id}', [TodoController::class, 'deleteTodo']);
+-   Open your `.env` file, if it's not there, copy the `.env.example`, and rename it as `.env`
+-   Then, configure your `.env` file like this (if you using mysql), or configure it as your other used database provider.
 
-
-    //other routes
-
-});
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=dumbmerch
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-In this code, we make a route group with the name `v1`, which means version 1, so when you access the API, you should access it like this (assume you use port 8000): `localhost:8000/api/v1/todos`
+### Delete unused file
 
--   On `app/Http/Controllers` create `TodoController.php` file
+When you create first laravel project, it has some template file that is already made, delete this file **(we recommend just delete the file inside it, not the folder)** :
 
-> File: `app/Http/Controllers/TodoController.php`
+-   `app/Models/User.php` (or, all files inside `Models` folder)
+-   `database/factories/UserFactory.php` (or, all files inside `factories` folder)
+-   `database/migrations/*` (or, all inside `migration` folder)
 
-```php
-<?php
-namespace App\Http\Controllers;
+Even we're trying to make the `User` again after this, we'll try to make at from start so you can understand.
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
+### Automatically generate model, migration, controller, factory, and seeder
+
+You can type this in your terminal (shorthand version) :
+
+```bash
+php artisan make:model -mcfs
 ```
 
--   Then migrate "all" of your `TodoController` code from `routes/api.php` to `app/Http/Controllers/TodoController.php`
+or (long version)
 
-```php
-class Todo
-{
-    public string $id;
-    public string $title;
-    public bool $isDone;
+```bash
+php artisan make:model User --migration --controller --factory --seed
+```
 
-    public function __construct($id, $title, $isDone)
+as you see, laravel automatically creating this file :
+
+-   `app/Models/User.php`
+-   `database/factories/UserFactory.php`
+-   `database/migrations/your_date_create_users_table.php`
+-   `database/seeders/UserSeeder.php`
+
+simple explanation :
+
+-   `Model`: A model is a representation of a database table in code. It helps you interact with data in that table.
+-   `Migration`: A migration is a way to change the structure of the database. It lets you create, modify, or delete tables and columns.
+-   `Controller`: A controller is a way to handle requests and return responses. It's where you put your application's logic.
+-   `Factory`: A factory is a way to create fake data. It helps you write automated tests.
+-   `Seed`: A seed is a way to populate your database with initial data. It helps you get started with your application.
+
+### Setup migration
+
+-   Open your `User` migration file, setup your table schema to be like this :
+
+    > File : database/migrations/your_date_create_users_table.php
+
+    ```php
+    public function up()
     {
-        $this->id = $id;
-        $this->title = $title;
-        $this->isDone = $isDone;
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string("name");
+        $table->string("email")->unique();
+        $table->string("password");
+        $table->timestamps();
+    });
     }
-}
+    ```
 
-class TodoController
-{
-    private string $todosFile;
+### Setup factory
 
-    public function __construct()
+-   Open your `User` factory file, setup your fake data definition to be like this :
+
+    > File : database/factories/UserFactory.php
+
+    ```php
+    public function definition()
     {
-        $this->todosFile = base_path("/todos.json");
+        return [
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
+            'password' => fake()->unique()->password()
+        ];
     }
+    ```
 
-    public function findTodos()
+### Setup seeder
+
+-   Open your `User` seeder file, setup your code like this :
+
+    > File : database/seeders/UserSeeder.php
+
+    ```php
+    public function run()
     {
-        $todos = json_decode(File::get($this->todosFile));
-
-        return response()->json([
-            'message' => $todos
-        ]);
+        \App\Models\User::factory()->count(5)->create();
     }
+    ```
 
-    public function getTodo($id)
+    It will be generate 5 data generated from factory
+
+-   Open your `DatabaseSeeder.php` file, and call the UserSeeder like so :
+
+    > File : database/seeders/DatabaseSeeder.php
+
+    ```php
+    public function run()
     {
-        $todo = null;
-        $isGetTodo = false;
+        $this->call(UserSeeder::class);
+    }
+    ```
 
-        $todos = json_decode(File::get($this->todosFile));
+### Let's try to migrate!
 
-        foreach ($todos as $item) {
-            if ($id === $item->id) {
-                $isGetTodo = true;
-                $todo = $item;
-                break;
+Run this in your beloved terminal :
+
+```bash
+php artisan migrate --seed
+```
+
+or
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+`migrate:fresh`, means that you will automatically delete all your table, and migrate it again from scratch.
+
+Result in phpmyadmin :
+
+![Alt text](image-1.png)
+
+### Setup DTO
+
+A Data Transfer Object (DTO) is a simple PHP class that is used to transfer data between different parts of your application. DTOs are often used to encapsulate data that is retrieved from a database or an external API, and then pass that data to another part of your application.
+
+-   Create manually, folder named `DTO` inside `app/` folder
+-   Then, inside DTO folder make this structure :
+
+```txt
+app/
+└── DTO/
+    ├── Request/
+    │   └── User/
+    │       ├── CreateUserRequest.php
+    │       └── UpdateUserRequest.php
+    └── Response/
+        └── User/
+            ├── UserResponse.php
+            Result/
+            ├── SuccessResponse.php
+            └── ErrorResponse.php
+```
+
+-   Write `SuccessResponse.php` :
+
+    > File : app/DTO/Response/Result/SuccessResponse.php
+
+    ```php
+    <?php
+
+    namespace App\DTO\Response\Result;
+
+    class SuccessResponse
+    {
+        public int $code;
+        public mixed $data;
+
+        public function __construct(int $code, mixed $data)
+        {
+            $this->code = $code;
+            $this->data = $data;
+        }
+
+        public function toArray(): array
+        {
+            return [
+                'code' => $this->code,
+                'data' => $this->data,
+            ];
+        }
+    }
+    ```
+
+-   Write `ErrorResponse.php` :
+
+    > File : app/DTO/Response/Result/ErrorResponse.php
+
+    ```php
+    <?php
+
+    namespace App\DTO\Response\Result;
+
+    class ErrorResponse
+    {
+        public int $code;
+        public mixed $message;
+
+        public function __construct(int $code, mixed $message)
+        {
+            $this->code = $code;
+            $this->message = $message;
+        }
+
+        public function toArray(): array
+        {
+            return [
+                'code' => $this->code,
+                'message' => $this->message,
+            ];
+        }
+    }
+    ```
+
+-   Write `UserResponse.php` :
+
+    > File : app/DTO/Response/User/UserResponse.php
+
+    ```php
+    <?php
+
+    namespace App\DTO\Response\User;
+
+    use App\Models\User;
+
+    class UserResponse
+    {
+        public int $id;
+        public string $name;
+        public string $email;
+
+        public function __construct(User $user)
+        {
+            $this->id = $user->id;
+            $this->name = $user->name;
+            $this->email = $user->email;
+        }
+
+        public function toArray(): array
+        {
+            return [
+                'id' => $this->id,
+                'name' => $this->name,
+                'email' => $this->email,
+            ];
+        }
+    }
+    ```
+
+-   Write `CreateUserRequest.php` :
+
+    > File : app/DTO/Response/Result/ErrorResponse.php
+
+    ```php
+    <?php
+
+    namespace App\DTO\Request\User;
+
+    use Illuminate\Support\Facades\Validator;
+
+    class CreateUserRequest
+    {
+        public string $name;
+        public string $email;
+        public string $password;
+
+        public function __construct(array $user)
+        {
+            $this->name = $user["name"] ?? "";
+            $this->email = $user["email"] ?? "";
+            $this->password = $user["password"] ?? "";
+        }
+
+        public function validate(): array
+        {
+            $validator = Validator::make([
+                'name' => $this->name,
+                'email' => $this->email,
+                'password' => $this->password,
+            ], [
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'email', 'unique:users,email'],
+                'password' => ['required', 'string', 'min:4'],
+            ]);
+
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                return [
+                    'error' => $errors,
+                ];
             }
+
+            return [];
+        }
+    }
+    ```
+
+-   Write `UpdateUserRequest.php` :
+
+    > File : app/DTO/Response/Result/ErrorResponse.php
+
+    ```php
+    <?php
+
+    namespace App\DTO\Request\User;
+
+    use Illuminate\Support\Facades\Validator;
+
+    class UpdateUserRequest
+    {
+        public string $name;
+        public string $email;
+        public string $password;
+
+        public function __construct(array $user)
+        {
+            $this->name = $user["name"] ?? "";
+            $this->email = $user["email"] ?? "";
+            $this->password = $user["password"] ?? "";
         }
 
-        if (!$isGetTodo) {
-            return response()->json([
-                "code" => 404,
-                "message" => "ID : $id not found"
-            ], 404);
-        }
+        public function validate(): array
+        {
+            $validator = Validator::make([
+                'name' => $this->name,
+                'email' => $this->email,
+                'password' => $this->password,
+            ], [
+                'name' => ['nullable', 'string', 'max:255'],
+                'email' => ['nullable', 'email', "unique:users,email"],
+                'password' => ['nullable', 'string', 'min:4'],
+            ]);
 
-        return response()->json($todo);
-    }
-
-    public function createTodo(Request $request)
-    {
-        $todos = json_decode(File::get($this->todosFile));
-
-        $todo = new Todo(
-            $request->json()->get('id'),
-            $request->json()->get('title'),
-            $request->json()->get('isDone')
-        );
-
-        array_push($todos, $todo);
-
-        File::put($this->todosFile, json_encode($todos));
-
-        return response()->json([
-            "code" => 201,
-            'message' => 'Todo created successfully'
-        ]);
-    }
-
-    public function updateTodo(Request $request, $id)
-    {
-        $data = $request->json()->all();
-        $isGetTodo = false;
-
-        $todos = json_decode(File::get($this->todosFile));
-
-        foreach ($todos as $index => $item) {
-            if ($id === $item->id) {
-                $isGetTodo = true;
-                $todos[$index] = $data;
-                break;
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                return [
+                    'error' => $errors,
+                ];
             }
+
+            return [];
         }
-
-        if (!$isGetTodo) {
-            return response()->json([
-                "code" => 404,
-                "message" => "ID : $id not found"
-            ], 404);
-        }
-
-        File::put($this->todosFile, json_encode($todos));
-
-        return response()->json($data);
     }
+    ```
 
-    public function deleteTodo($id)
-    {
-        $isGetTodo = false;
-        $index = 0;
-
-        $todos = json_decode(File::get($this->todosFile));
-
-        foreach ($todos as $idx => $item) {
-            if ($id === $item->id) {
-                $isGetTodo = true;
-                $index = $idx;
-                break;
-            }
-        }
-
-        if (!$isGetTodo) {
-            return response()->json([
-                "code" => 404,
-                "ID : $id not found"
-            ], 404);
-        }
-
-        array_splice($todos, $index, 1);
-        File::put($this->todosFile, json_encode($todos));
-
-        return response()->json([
-            "code" => 204,
-            'message' => 'Todo deleted successfully'
-        ]);
-    }
-}
-```
-
--   Change the import in `routes/api.php` like this :
-
-> File: `routes/api.php`
-
-```php
-use App\Http\Controllers\TodoController;
-use Illuminate\Support\Facades\Route;
-```
-
-So it's simply calling `TodoController` from `Controllers`
-
-### Trying in Postman
-
-![Alt text](image.png)
-
-Notice, it has v1 after api so it's become `/api/v1/`
+-   Okay, it's done now, after this you could create something more interesting 🔥
