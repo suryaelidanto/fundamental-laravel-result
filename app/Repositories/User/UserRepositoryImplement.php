@@ -78,8 +78,6 @@ class UserRepositoryImplement implements UserRepository
                 $password = $userById["password"];
             }
 
-            var_dump($userById["id"]);
-
             $this->model->where("id", $userById["id"])->update([
                 "name" => $name,
                 "email" => $email,
@@ -92,7 +90,7 @@ class UserRepositoryImplement implements UserRepository
         }
     }
 
-    public function deleteUserById($id): array
+    public function deleteUserById(int $id): array
     {
         try {
             DB::delete("DELETE FROM users WHERE id = ?", [$id]);

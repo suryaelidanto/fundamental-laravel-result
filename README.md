@@ -26,13 +26,11 @@
                 $password = $userById["password"];
             }
 
-            var_dump($userById["id"]);
-
             $this->model->where("id", $userById["id"])->update([
                 "name" => $name,
                 "email" => $email,
                 "password" => $password
-            ]); // modify to this code
+            ]);
 
             return ["message" => sprintf("User ID : '%s' is updated!", $userById["id"])];
         } catch (\Exception $e) {
