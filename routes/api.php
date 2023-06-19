@@ -25,6 +25,7 @@ Route::prefix("v1")->group(function () {
     Route::delete('/todos/{id}', [TodoController::class, 'deleteTodo']);
 
 
-    //others
-    
+    // users
+    Route::get('/users', [UserController::class, 'getAllUsers']);
+    Route::get('/users/{id}', [UserController::class, 'getUserById']);
 });

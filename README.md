@@ -1,357 +1,164 @@
-# Prepare connection, model, and dto
+# Fetching Query with Eloquent
 
-What we should prepare before starting to use the project is :
+### Repositories
 
-### Database
+-   Create `Repositories` folder, inside it create another folder called `User`, then inside it create 2 files called `UserRepository.php` and `UserRepositoryImplement.php`
 
--   Create database named `dumbmerch`
+-   Then write this code in `UserRepository.php` :
 
-### Connect database to laravel app
-
--   Open your `.env` file, if it's not there, copy the `.env.example`, and rename it as `.env`
--   Then, configure your `.env` file like this (if you using mysql), or configure it as your other used database provider.
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=dumbmerch
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-### Delete unused file
-
-When you create first laravel project, it has some template file that is already made, delete this file **(we recommend just delete the file inside it, not the folder)** :
-
--   `app/Models/User.php` (or, all files inside `Models` folder)
--   `database/factories/UserFactory.php` (or, all files inside `factories` folder)
--   `database/migrations/*` (or, all inside `migration` folder)
-
-Even we're trying to make the `User` again after this, we'll try to make at from start so you can understand.
-
-### Automatically generate model, migration, controller, factory, and seeder
-
-You can type this in your terminal (shorthand version) :
-
-```bash
-php artisan make:model -mcfs
-```
-
-or (long version)
-
-```bash
-php artisan make:model User --migration --controller --factory --seed
-```
-
-as you see, laravel automatically creating this file :
-
--   `app/Models/User.php`
--   `database/factories/UserFactory.php`
--   `database/migrations/your_date_create_users_table.php`
--   `database/seeders/UserSeeder.php`
-
-simple explanation :
-
--   `Model`: A model is a representation of a database table in code. It helps you interact with data in that table.
--   `Migration`: A migration is a way to change the structure of the database. It lets you create, modify, or delete tables and columns.
--   `Controller`: A controller is a way to handle requests and return responses. It's where you put your application's logic.
--   `Factory`: A factory is a way to create fake data. It helps you write automated tests.
--   `Seed`: A seed is a way to populate your database with initial data. It helps you get started with your application.
-
-### Setup migration
-
--   Open your `User` migration file, setup your table schema to be like this :
-
-    > File : database/migrations/your_date_create_users_table.php
-
-    ```php
-    public function up()
-    {
-    Schema::create('users', function (Blueprint $table) {
-        $table->id();
-        $table->string("name");
-        $table->string("email")->unique();
-        $table->string("password");
-        $table->timestamps();
-    });
-    }
-    ```
-
-### Setup factory
-
--   Open your `User` factory file, setup your fake data definition to be like this :
-
-    > File : database/factories/UserFactory.php
-
-    ```php
-    public function definition()
-    {
-        return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'password' => fake()->unique()->password()
-        ];
-    }
-    ```
-
-### Setup seeder
-
--   Open your `User` seeder file, setup your code like this :
-
-    > File : database/seeders/UserSeeder.php
-
-    ```php
-    public function run()
-    {
-        \App\Models\User::factory()->count(5)->create();
-    }
-    ```
-
-    It will be generate 5 data generated from factory
-
--   Open your `DatabaseSeeder.php` file, and call the UserSeeder like so :
-
-    > File : database/seeders/DatabaseSeeder.php
-
-    ```php
-    public function run()
-    {
-        $this->call(UserSeeder::class);
-    }
-    ```
-
-### Let's try to migrate!
-
-Run this in your beloved terminal :
-
-```bash
-php artisan migrate --seed
-```
-
-or
-
-```bash
-php artisan migrate:fresh --seed
-```
-
-`migrate:fresh`, means that you will automatically delete all your table, and migrate it again from scratch.
-
-Result in phpmyadmin :
-
-![Alt text](image-1.png)
-
-### Setup DTO
-
-A Data Transfer Object (DTO) is a simple PHP class that is used to transfer data between different parts of your application. DTOs are often used to encapsulate data that is retrieved from a database or an external API, and then pass that data to another part of your application.
-
--   Create manually, folder named `DTO` inside `app/` folder
--   Then, inside DTO folder make this structure :
-
-```txt
-app/
-└── DTO/
-    ├── Request/
-    │   └── User/
-    │       ├── CreateUserRequest.php
-    │       └── UpdateUserRequest.php
-    └── Response/
-        └── User/
-            ├── UserResponse.php
-            Result/
-            ├── SuccessResponse.php
-            └── ErrorResponse.php
-```
-
--   Write `SuccessResponse.php` :
-
-    > File : app/DTO/Response/Result/SuccessResponse.php
+    > File: `app/Repositories/User/UserRepository.php`
 
     ```php
     <?php
 
-    namespace App\DTO\Response\Result;
+    namespace App\Repositories\User;
 
-    class SuccessResponse
+    interface UserRepository
     {
-        public int $code;
-        public mixed $data;
-
-        public function __construct(int $code, mixed $data)
-        {
-            $this->code = $code;
-            $this->data = $data;
-        }
-
-        public function toArray(): array
-        {
-            return [
-                'code' => $this->code,
-                'data' => $this->data,
-            ];
-        }
+        public function getAllUsers(): array;
+        public function getUserById(int $id): array;
     }
     ```
 
--   Write `ErrorResponse.php` :
+-   Write this code in `UserRepositoryImplement.php` :
 
-    > File : app/DTO/Response/Result/ErrorResponse.php
+    > File: `app/Repositories/User/UserRepositoryImplement.php`
 
     ```php
     <?php
 
-    namespace App\DTO\Response\Result;
-
-    class ErrorResponse
-    {
-        public int $code;
-        public mixed $message;
-
-        public function __construct(int $code, mixed $message)
-        {
-            $this->code = $code;
-            $this->message = $message;
-        }
-
-        public function toArray(): array
-        {
-            return [
-                'code' => $this->code,
-                'message' => $this->message,
-            ];
-        }
-    }
-    ```
-
--   Write `UserResponse.php` :
-
-    > File : app/DTO/Response/User/UserResponse.php
-
-    ```php
-    <?php
-
-    namespace App\DTO\Response\User;
+    namespace App\Repositories\User;
 
     use App\Models\User;
+    use Illuminate\Support\Facades\DB;
 
-    class UserResponse
+    class UserRepositoryImplement implements UserRepository
     {
-        public int $id;
-        public string $name;
-        public string $email;
+        private $model;
 
-        public function __construct(User $user)
+        public function __construct(User $model)
         {
-            $this->id = $user->id;
-            $this->name = $user->name;
-            $this->email = $user->email;
+            $this->model = $model;
         }
 
-        public function toArray(): array
+        public function getAllUsers(): array
         {
-            return [
-                'id' => $this->id,
-                'name' => $this->name,
-                'email' => $this->email,
-            ];
+            try {
+                return DB::select("SELECT * FROM users");
+            } catch (\Exception $e) {
+                return ["error" => $e->getMessage()];
+            }
+        }
+
+        public function getUserById(int $id): array
+        {
+            try {
+                $user = DB::select("SELECT * FROM users WHERE id = ?", [$id]);
+
+                if (empty($user)) {
+                    return ["error" => "User not found"];
+                }
+
+                return $user;
+            } catch (\Exception $e) {
+                return ["error" => $e->getMessage()];
+            }
         }
     }
     ```
 
--   Write `CreateUserRequest.php` :
+    Explanation : `UserRepository` file can be called as interface, basically it's just a contract that implemented in `UserRepositoryImplement`
 
-    > File : app/DTO/Response/Result/ErrorResponse.php
+### AppServiceProvider
+
+-   Open your `AppServiceProvider.php` :
+
+-   Then, import your repositories on top like this :
+
+    > File : `app/Providers/AppServiceProvider.php`
+
+    ```php
+    use App\Repositories\User\UserRepository;
+    use App\Repositories\User\UserRepositoryImplement;
+    ```
+
+-   Then, add bind your repositories like this, it's needed so you can access your repositories later in your controllers :
+
+    ```php
+    public function register()
+    {
+        $this->app->bind(UserRepository::class, UserRepositoryImplement::class);
+    }
+    ```
+
+### Controllers
+
+-   Now, open your `UserController.php`, write this code :
+
+    > File: `app/Http/Controllers/UserController.php`
 
     ```php
     <?php
 
-    namespace App\DTO\Request\User;
+    namespace App\Http\Controllers;
 
-    use Illuminate\Support\Facades\Validator;
+    use App\DTO\Response\Result\ErrorResponse;
+    use App\DTO\Response\Result\SuccessResponse;
+    use App\Repositories\User\UserRepository;
+    use Illuminate\Http\JsonResponse;
+    use Illuminate\Http\Response;
 
-    class CreateUserRequest
+    class UserController extends Controller
     {
-        public string $name;
-        public string $email;
-        public string $password;
+        private $userRepository;
 
-        public function __construct(array $user)
+        public function __construct(UserRepository $userRepository)
         {
-            $this->name = $user["name"] ?? "";
-            $this->email = $user["email"] ?? "";
-            $this->password = $user["password"] ?? "";
+            $this->userRepository = $userRepository;
         }
 
-        public function validate(): array
+        public function getAllUsers(): JsonResponse
         {
-            $validator = Validator::make([
-                'name' => $this->name,
-                'email' => $this->email,
-                'password' => $this->password,
-            ], [
-                'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'unique:users,email'],
-                'password' => ['required', 'string', 'min:4'],
-            ]);
+            $allUsers = $this->userRepository->getAllUsers();
 
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                return [
-                    'error' => $errors,
-                ];
+            if (array_key_exists("error", $allUsers)) {
+                return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $allUsers["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
-            return [];
+            return response()->json((new SuccessResponse(Response::HTTP_OK, $allUsers))->toArray(), Response::HTTP_OK);
+        }
+
+        public function getUserById(int $id): JsonResponse
+        {
+            $userById = $this->userRepository->getUserById($id);
+
+            if (array_key_exists("error", $userById)) {
+                return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
+            }
+
+            return response()->json((new SuccessResponse(Response::HTTP_OK, $userById))->toArray(), Response::HTTP_OK);
         }
     }
     ```
 
--   Write `UpdateUserRequest.php` :
+### Routes
 
-    > File : app/DTO/Response/Result/ErrorResponse.php
+-   On `api.php` folder, add users route like this :
+
+    > File: `routes/api.php`
 
     ```php
-    <?php
+    // other route code before...
 
-    namespace App\DTO\Request\User;
-
-    use Illuminate\Support\Facades\Validator;
-
-    class UpdateUserRequest
-    {
-        public string $name;
-        public string $email;
-        public string $password;
-
-        public function __construct(array $user)
-        {
-            $this->name = $user["name"] ?? "";
-            $this->email = $user["email"] ?? "";
-            $this->password = $user["password"] ?? "";
-        }
-
-        public function validate(): array
-        {
-            $validator = Validator::make([
-                'name' => $this->name,
-                'email' => $this->email,
-                'password' => $this->password,
-            ], [
-                'name' => ['nullable', 'string', 'max:255'],
-                'email' => ['nullable', 'email', "unique:users,email"],
-                'password' => ['nullable', 'string', 'min:4'],
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                return [
-                    'error' => $errors,
-                ];
-            }
-
-            return [];
-        }
-    }
+    // users
+    Route::get('/users', [UserController::class, 'getAllUsers']);
+    Route::get('/users/{id}', [UserController::class, 'getUserById']);
     ```
 
--   Okay, it's done now, after this you could create something more interesting 🔥
+-   Don't forget to import, it's become easier (auto import, snippets, etc) if you install the extension in vscode (or even better using IDE, like PHPStorm) :
+
+    ```php
+    use App\Http\Controllers\UserController;
+    ```
+
+Yes, you're right. After that complex setup, it has become much easier to add or modify our code for later.
