@@ -2,18 +2,10 @@
 
 namespace App\Repositories\User;
 
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class UserRepositoryImplement implements UserRepository
 {
-    private $model;
-
-    public function __construct(User $model)
-    {
-        $this->model = $model;
-    }
-
     public function getAllUsers(): array
     {
         try {
