@@ -17,7 +17,7 @@ class UserRepositoryImplement implements UserRepository
     public function getAllUsers(): array
     {
         try {
-            return DB::select("SELECT * FROM users");
+            return $this->model->all()->toArray();
         } catch (\Exception $e) {
             return ["error" => $e->getMessage()];
         }
@@ -26,11 +26,13 @@ class UserRepositoryImplement implements UserRepository
     public function getUserById(int $id): array
     {
         try {
-            $user = DB::select("SELECT * FROM users WHERE id = ?", [$id]);
+            $user = $this->model->find($id);
 
             if (empty($user)) {
                 return ["error" => "User not found"];
             }
+
+            $user = $user->toArray();
 
             return $user;
         } catch (\Exception $e) {

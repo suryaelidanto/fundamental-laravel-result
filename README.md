@@ -1,85 +1,70 @@
-# Delete Query with Query Builder
+# Fetching Data with Eloquent
+
+### Eloquent Definition
+
+Eloquent is Laravel's ORM (Object-Relational Mapping) that simplifies database interactions. It allows you to work with PHP objects to perform CRUD operations on database tables. Eloquent provides a clean syntax, relationships management, querying options, and convenient methods for retrieving and manipulating data. It streamlines database operations in Laravel, making development easier and more efficient.
+
+### Why using ORM instead of Query Builder?
+
+Eloquent ORM simplifies database interactions in Laravel with a cleaner and more expressive syntax. It provides features like relationships management, model events, and automatic timestamp handling not available with query builders. Eloquent can streamline database operations in Laravel and make development more efficient.
 
 ### Repositories
 
--   Write this code in `UserRepository.php` :
+-   Firstly, import `User` model like this:
 
-    > File: `app/Repositories/User/UserRepository.php`
+    > File: `app/Repositories/User/UserRepositoryImplement.php`
 
     ```php
-    <?php
+    use App\Models\User;
+    ```
 
-    namespace App\Repositories\User;
+-   Then, on top of all method, inside class, write this code :
 
-    interface UserRepository
+    > File: `app/Repositories/User/UserRepositoryImplement.php`
+
+    ```php
+    private $model;
+
+    public function __construct(User $model)
     {
-        public function getAllUsers(): array;
-        public function getUserById(int $id): array;
-        public function createUser(array $request): array;
-        public function updateUserById(array $request, array $userById): array;
-        public function deleteUserById(int $id): array; // write this code
+        $this->model = $model;
     }
     ```
 
--   Add new method in `UserRepositoryImplement.php` :
+-   Modify your `getAllUsers` method to use eloquent, like this :
 
     > File: `app/Repositories/User/UserRepositoryImplement.php`
 
     ```php
     // other code above...
 
-    public function deleteUserById($id): array
+    public function getAllUsers(): array
     {
         try {
-            DB::delete("DELETE FROM users WHERE id = ?", [$id]);
-
-            return ["message" => sprintf("User ID : %d is deleted!", $id)];
+            return $this->model->all()->toArray(); // modify this line
         } catch (\Exception $e) {
             return ["error" => $e->getMessage()];
         }
     }
     ```
 
-### Controllers
-
--   Now, open your `UserController.php`, add this code :
-
-    > File: `app/Http/Controllers/UserController.php`
+-   Modify your `getUserById` method to use eloquent, like this :
 
     ```php
-    // other code above...
-
-    public function deleteUserById(int $id): JsonResponse
+    public function getUserById(int $id): array
     {
-        $userById = $this->userRepository->getUserById($id);
+        try {
+            $user = $this->model->find($id); // modify this line
 
-        if (array_key_exists("error", $userById)) {
-            return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
+            if (empty($user)) {
+                return ["error" => "User not found"];
+            }
+
+            $user = $user->toArray(); // add this line
+
+            return $user;
+        } catch (\Exception $e) {
+            return ["error" => $e->getMessage()];
         }
-
-        $deletedUser = $this->userRepository->deleteUserById($userById[0]->id);
-
-        if (array_key_exists("error", $deletedUser)) {
-            return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $deletedUser["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        return response()->json((new SuccessResponse(Response::HTTP_OK, $deletedUser))->toArray(), Response::HTTP_OK);
     }
-    ```
-
-### Routes
-
--   On `api.php` folder, add new users route like this :
-
-    > File: `routes/api.php`
-
-    ```php
-    // other route code before...
-
-    // users
-    Route::get('/users', [UserController::class, 'getAllUsers']);
-    Route::get('/users/{id}', [UserController::class, 'getUserById']);
-    Route::post('/users', [UserController::class, 'createUser']);
-    Route::patch('/users/{id}', [UserController::class, 'updateUserById']);
-    Route::delete('/users/{id}', [UserController::class, 'deleteUserById']); // write this code
     ```
