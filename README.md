@@ -35,20 +35,20 @@
             $password = $request["password"] ?? "";
 
             if ($name == "") {
-                $name = $userById[0]->name;
+                $name = $userById["name"];
             }
 
             if ($email == "") {
-                $email = $userById[0]->email;
+                $email = $userById["email"];
             }
 
             if ($password == "") {
-                $password = $userById[0]->password;
+                $password = $userById["password"];
             }
 
-            DB::update("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?", [$name, $email, $password, $userById[0]->id]);
+            DB::update("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?", [$name, $email, $password, $userById["id"]]);
 
-            return ["message" => sprintf("User ID : '%s' is updated!", $userById[0]->id)];
+            return ["message" => sprintf("User ID : '%s' is updated!", $userById["id"])];
         } catch (\Exception $e) {
             return ["error" => $e->getMessage()];
         }
