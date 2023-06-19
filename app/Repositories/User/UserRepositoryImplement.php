@@ -3,7 +3,6 @@
 namespace App\Repositories\User;
 
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class UserRepositoryImplement implements UserRepository
 {
@@ -92,10 +91,10 @@ class UserRepositoryImplement implements UserRepository
         }
     }
 
-    public function deleteUserById($id): array
+    public function deleteUserById(int $id): array
     {
         try {
-            DB::delete("DELETE FROM users WHERE id = ?", [$id]);
+            $this->model->where("id", $id)->delete();
 
             return ["message" => sprintf("User ID : %d is deleted!", $id)];
         } catch (\Exception $e) {

@@ -1,40 +1,18 @@
-# Update Data with Eloquent
+# Delete Data with Eloquent
 
 ### Repositories
 
--   Modify your `updateUserById` method to use eloquent, like this :
+-   Modify your `deleteUserById` method to use eloquent, like this :
 
     > File: `app/Repositories/User/UserRepositoryImplement.php`
 
     ```php
-    public function updateUserById(array $request, array $userById): array
+    public function deleteUserById(int $id): array
     {
         try {
-            $name = $request["name"] ?? "";
-            $email = $request["email"] ?? "";
-            $password = $request["password"] ?? "";
+            $this->model->where("id", $id)->delete(); // modify like this
 
-            if ($name == "") {
-                $name = $userById["name"];
-            }
-
-            if ($email == "") {
-                $email = $userById["email"];
-            }
-
-            if ($password == "") {
-                $password = $userById["password"];
-            }
-
-            var_dump($userById["id"]);
-
-            $this->model->where("id", $userById["id"])->update([
-                "name" => $name,
-                "email" => $email,
-                "password" => $password
-            ]); // modify to this code
-
-            return ["message" => sprintf("User ID : '%s' is updated!", $userById["id"])];
+            return ["message" => sprintf("User ID : %d is deleted!", $id)];
         } catch (\Exception $e) {
             return ["error" => $e->getMessage()];
         }
