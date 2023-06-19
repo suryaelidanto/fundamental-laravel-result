@@ -112,5 +112,3 @@
     Route::post('/users', [UserController::class, 'createUser']);
     Route::patch('/users/{id}', [UserController::class, 'updateUserById']); // write this code
     ```
-
--   Notice that here we use `Route::post` not `Route::get` for creating user, because we want to use `POST` HTTP request in postman later.
