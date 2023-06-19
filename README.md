@@ -1,45 +1,42 @@
-# Insert Data with Eloquent
+# Update Data with Eloquent
 
 ### Repositories
 
--   Modify your `createUser` method to use eloquent, like this :
+-   Modify your `updateUserById` method to use eloquent, like this :
 
     > File: `app/Repositories/User/UserRepositoryImplement.php`
 
     ```php
-    public function createUser(array $request): array
+    public function updateUserById(array $request, array $userById): array
     {
         try {
-            $name = $request["name"];
-            $email = $request["email"];
-            $password = $request["password"];
+            $name = $request["name"] ?? "";
+            $email = $request["email"] ?? "";
+            $password = $request["password"] ?? "";
 
-            $this->model->create([
+            if ($name == "") {
+                $name = $userById["name"];
+            }
+
+            if ($email == "") {
+                $email = $userById["email"];
+            }
+
+            if ($password == "") {
+                $password = $userById["password"];
+            }
+
+            var_dump($userById["id"]);
+
+            $this->model->where("id", $userById["id"])->update([
                 "name" => $name,
                 "email" => $email,
                 "password" => $password
-            ]); // modify to this
+            ]); // modify to this code
 
-            return ["message" => sprintf("User email : '%s' is created!", $email)];
+            return ["message" => sprintf("User ID : '%s' is updated!", $userById["id"])];
         } catch (\Exception $e) {
             return ["error" => $e->getMessage()];
         }
     }
     ```
-
--   And, add this `$fillable` in `User` models :
-
-    > File : `app/Models/User.php`
-
-    ```php
-    class User extends Model
-    {
-        use HasFactory;
-
-        protected $fillable = [
-            'name', 'email', 'password',
-        ]; // add this variable
-    }
-    ```
-
--   The `$fillable` variable allows you to declare which columns can be filled.
