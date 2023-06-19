@@ -47,7 +47,11 @@ class UserRepositoryImplement implements UserRepository
             $email = $request["email"];
             $password = $request["password"];
 
-            DB::insert("INSERT INTO users (name, email, password, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", [$name, $email, $password, now(), now()]);
+            $this->model->create([
+                "name" => $name,
+                "email" => $email,
+                "password" => $password
+            ]);
 
             return ["message" => sprintf("User email : '%s' is created!", $email)];
         } catch (\Exception $e) {
