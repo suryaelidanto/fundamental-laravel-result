@@ -45,13 +45,13 @@
         public function getUserById(int $id): array
         {
             try {
-                $user = DB::select("SELECT * FROM users WHERE id = ?", [$id]);
+                $user = DB::selectOne("SELECT * FROM users WHERE id = ?", [$id]);
 
                 if (empty($user)) {
                     return ["error" => "User not found"];
                 }
 
-                return $user;
+                return get_object_vars($user);
             } catch (\Exception $e) {
                 return ["error" => $e->getMessage()];
             }
