@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\Request\User\CreateUserRequest;
 use App\DTO\Response\Result\ErrorResponse;
 use App\DTO\Response\Result\SuccessResponse;
 use App\Repositories\User\UserRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class UserController extends Controller
@@ -37,5 +39,22 @@ class UserController extends Controller
         }
 
         return response()->json((new SuccessResponse(Response::HTTP_OK, $userById))->toArray(), Response::HTTP_OK);
+    }
+
+    public function createUser(Request $request): JsonResponse
+    {
+        $validatedRequest =  (new CreateUserRequest($request->all()))->validate();
+
+        if (array_key_exists("error", $validatedRequest)) {
+            return response()->json((new ErrorResponse(Response::HTTP_BAD_REQUEST, $validatedRequest["error"]))->toArray(), Response::HTTP_BAD_REQUEST);
+        }
+
+        $createdUser = $this->userRepository->createUser($request->all());
+
+        if (array_key_exists("error", $createdUser)) {
+            return response()->json((new ErrorResponse(Response::HTTP_INTERNAL_SERVER_ERROR, $createdUser["error"]))->toArray(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return response()->json((new SuccessResponse(Response::HTTP_OK, $createdUser))->toArray(), Response::HTTP_OK);
     }
 }
