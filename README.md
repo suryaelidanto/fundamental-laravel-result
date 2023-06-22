@@ -65,6 +65,8 @@
 
         return response()->json((new SuccessResponse(Response::HTTP_OK, $deletedUser))->toArray(), Response::HTTP_OK);
     }
+
+    // other code below...
     ```
 
 ### Routes
