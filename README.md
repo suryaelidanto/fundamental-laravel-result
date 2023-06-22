@@ -76,6 +76,8 @@
 
         return response()->json((new SuccessResponse(Response::HTTP_OK, $createdUser))->toArray(), Response::HTTP_OK);
     }
+
+    // other code below...
     ```
 
 ### Routes
