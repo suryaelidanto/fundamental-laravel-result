@@ -240,9 +240,9 @@ app/
 
         public function __construct(array $user)
         {
-            $this->id = $user["id"];
-            $this->name = $user["name"];
-            $this->email = $user["email"];
+            $this->id = $user["id"] ?? 0;
+            $this->name = $user["name"] ?? "";
+            $this->email = $user["email"] ?? "";
         }
 
         public function toArray(): array
