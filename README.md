@@ -128,7 +128,12 @@
                 return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
             }
 
-            return response()->json((new SuccessResponse(Response::HTTP_OK, $userById))->toArray(), Response::HTTP_OK);
+            return response()->json((new SuccessResponse(Response::HTTP_OK,  $this->convertResponseUser($userById)))->toArray(), Response::HTTP_OK);
+        }
+
+        function convertResponseUser(array $user): array
+        {
+            return (new UserResponse($user))->toArray();
         }
     }
     ```
