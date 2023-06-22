@@ -96,6 +96,7 @@
 
     use App\DTO\Response\Result\ErrorResponse;
     use App\DTO\Response\Result\SuccessResponse;
+    use App\DTO\Response\User\UserResponse;
     use App\Repositories\User\UserRepository;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Response;
