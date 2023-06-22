@@ -6,6 +6,7 @@ use App\DTO\Request\User\CreateUserRequest;
 use App\DTO\Request\User\UpdateUserRequest;
 use App\DTO\Response\Result\ErrorResponse;
 use App\DTO\Response\Result\SuccessResponse;
+use App\DTO\Response\User\UserResponse;
 use App\Repositories\User\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ class UserController extends Controller
         return response()->json((new SuccessResponse(Response::HTTP_OK, $allUsers))->toArray(), Response::HTTP_OK);
     }
 
+
     public function getUserById(int $id): JsonResponse
     {
         $userById = $this->userRepository->getUserById($id);
@@ -39,7 +41,7 @@ class UserController extends Controller
             return response()->json((new ErrorResponse(Response::HTTP_NOT_FOUND, $userById["error"]))->toArray(), Response::HTTP_NOT_FOUND);
         }
 
-        return response()->json((new SuccessResponse(Response::HTTP_OK, $userById))->toArray(), Response::HTTP_OK);
+        return response()->json((new SuccessResponse(Response::HTTP_OK,  $this->convertResponseUser($userById)))->toArray(), Response::HTTP_OK);
     }
 
     public function createUser(Request $request): JsonResponse
@@ -81,5 +83,10 @@ class UserController extends Controller
         }
 
         return response()->json((new SuccessResponse(Response::HTTP_OK, $updatedUser))->toArray(), Response::HTTP_OK);
+    }
+
+    function convertResponseUser(array $user): array
+    {
+        return (new UserResponse($user))->toArray();
     }
 }

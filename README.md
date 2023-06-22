@@ -95,6 +95,8 @@
 
         return response()->json((new SuccessResponse(Response::HTTP_OK, $updatedUser))->toArray(), Response::HTTP_OK);
     }
+        
+    // other code below...
     ```
 
 ### Routes
